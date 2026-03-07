@@ -1,0 +1,61 @@
+{
+    "portBindings": [
+        {
+            "protocol": "UDP",
+            "portRange": "9000-9010"
+        },
+        {
+            "protocol": "TCP",
+            "port": 443
+        }
+    ],
+    "users": [
+        {
+            "name": "mieru",
+            "password": "M@^_12138",
+            "allowPrivateIP": true,
+            "allowLoopbackIP": true
+        },
+        {
+            "name": "admin",
+            "password": "Ad@^_12138",
+            "allowPrivateIP": true,
+            "allowLoopbackIP": true
+        }
+    ],
+    "loggingLevel": "INFO",
+    "mtu": 1350,
+    "egress": {
+        "proxies": [
+            {
+                "name": "cloudflare",
+                "protocol": "SOCKS5_PROXY_PROTOCOL",
+                "host": "127.0.0.1",
+                "port": 40000
+            }
+        ],
+        "rules": [
+            {
+                "ipRanges": [
+                    "8.8.4.4/32", 
+                    "8.8.8.8/32",
+                    "1.1.1.1/32",
+                    "1.0.0.1/32"
+                ],
+                "action": "DIRECT"
+            },
+            {
+                "domainNames": [
+                    "gstatic.com"
+                ],
+                "action": "DIRECT"
+            },
+            {
+                "ipRanges": ["*"],
+                "domainNames": ["*"],
+                "action": "PROXY",
+                "proxyNames": ["cloudflare"]
+            }
+        ]
+    }
+}
