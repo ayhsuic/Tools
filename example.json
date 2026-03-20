@@ -1,0 +1,50 @@
+{
+  "log": {
+    "level": "info"
+  },
+  "inbounds": [
+    {
+      "type": "vless",
+      "tag": "vless-in",
+      "listen": "::",
+      "listen_port": 443,
+      "users": [
+        {
+          "name": "jamesflare",
+          "uuid": "11391936-7544-4af5-ad02-e9f3970b1f64",
+          "flow": "xtls-rprx-vision"
+        }
+      ],
+      "tls": {
+        "enabled": true,
+        "server_name": "portfolio.newschool.edu",
+        "reality": {
+          "enabled": true,
+          "handshake": {
+            "server": "portfolio.newschool.edu",
+            "server_port": 443
+          },
+          "private_key": "0H5tYLhpDT_r675UC93iWAS2LqN6mPZoDcVDqsff018",
+          "short_id": [
+            "26079ba8291ff0fc"
+          ]
+        }
+      },
+      "multiplex": {
+        "enabled": false,
+        "padding": true,
+        "brutal": {
+          "enabled": false,
+          "up_mbps": 1000,
+          "down_mbps": 1000
+        }
+      }
+    }
+  ],
+  "outbounds": [
+    {
+      "type": "direct",
+      "tag": "direct"
+    }
+  ]
+}
