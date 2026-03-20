@@ -1,0 +1,122 @@
+{
+  "log": {"disabled": false, "level": "info", "output": "", "timestamp": true},
+  "ntp": {"enabled": true, "server": "time.apple.com", "server_port": 123, "interval": "30m"},
+  "dns": {
+    "servers": [
+      {"tag": "fakeip", "type": "fakeip", "inet4_range": "198.18.0.0/15", "inet6_range": "fc00::/18"},
+      {"tag": "local", "type": "https", "domain_resolver": "lresolver", "server_port": 443, "server": "223.5.5.5"},
+      {"tag": "lresolver", "type": "udp", "server_port": 53, "server": "223.5.5.5"},
+      {"tag": "remote", "type": "tls", "domain_resolver": "rresolver", "server_port": 853, "server": "1.1.1.1"},
+      {"tag": "rresolver", "type": "udp", "server_port": 53, "server": "1.1.1.1"}
+    ],
+    "rules": [
+      {"query_type": ["AAAA"],"server": "fakeip"},
+      {"action": "route", "clash_mode": "direct", "server": "local"},
+      {"action": "route", "clash_mode": "proxy", "server": "remote"},
+      {"action": "route", "rule_set": ["geosite-cn"], "server": "local"},
+      {"action": "route", "rule_set": ["geosite-cn"], "server": "remote", "client_subnet": "114.114.114.114", "invert": true}
+    ],
+    "disable_cache": false,
+    "disable_expire": false,
+    "independent_cache": true,
+    "final": "remote"
+  },
+  "inbounds": [
+    {"type": "mixed", "tag": "mixed", "listen": "0.0.0.0", "listen_port": 7891, "tcp_fast_open": false, "tcp_multi_path": false, "udp_fragment": false},
+    {
+      "type": "tun",
+      "tag": "tun",
+      "interface_name": "tun",
+      "address": [
+        "172.18.0.1/30",
+        "fdfe:dcba:9876::1/126"
+      ],
+      "mtu": 9000,
+      "auto_route": true,
+      "iproute2_table_index": 2022,
+      "iproute2_rule_index": 9000,
+      "auto_redirect": false,
+      "auto_redirect_input_mark": "0x2023",
+      "auto_redirect_output_mark": "0x2024",
+      "auto_redirect_reset_mark": "0x2025",
+      "auto_redirect_nfqueue": 100,
+      "auto_redirect_iproute2_fallback_rule_index": 32768,
+      "exclude_mptcp": false,
+      "loopback_address": [
+        "10.7.0.1"
+      ],
+      "strict_route": true,
+      "route_address": [
+        "0.0.0.0/1",
+        "128.0.0.0/1",
+        "::/1",
+        "8000::/1"
+      ],
+      "route_exclude_address": [
+        "192.168.0.0/16",
+        "fc00::/7"
+      ],
+      "route_address_set": [],
+      "route_exclude_address_set": [],
+      "endpoint_independent_nat": false,
+      "udp_timeout": "5m",
+      "stack": "system",
+      "include_interface": [],
+      "exclude_interface": [],
+      "include_uid": [],
+      "include_uid_range": [],
+      "exclude_uid": [],
+      "exclude_uid_range": [],
+      "include_android_user": [],
+      "include_package": [],
+      "exclude_package": [],
+      "include_mac_address": [],
+      "exclude_mac_address": [],
+      "platform": {
+        "http_proxy": {
+          "enabled": false,
+          "server": "127.0.0.1",
+          "server_port": 8080,
+          "bypass_domain": [],
+          "match_domain": []
+        }
+      }
+    }
+  ],
+  "outbounds": [
+    {"type": "direct", "tag": "direct"},
+    {"type": "selector", "tag": "proxy", "outbounds": ["direct","auto", "vless", "reality"]},
+    {"type": "selector", "tag": "fallback", "interrupt_exist_connections": true, "outbounds": ["proxy", "direct"]},
+    {"type": "urltest", "tag": "auto", "outbounds": ["vless", "reality"]},
+    {"type": "vless", "tag": "vless", "server": "", "server_port": 443, "uuid": "", "tls": {"enabled": true, "server_name": "", "utls": {"enabled": true, "fingerprint": "chrome"}}, "transport": {"type": "ws"}},
+    {"type": "vless", "tag": "reality", "server": "", "server_port": 34389, "uuid": "", "flow": "xtls-rprx-vision", "tls": {"enabled": true, "reality": {"enabled": true, "public_key": "", "short_id": ""}, "server_name": "sr.mihoyo.com", "utls": {"enabled": true, "fingerprint": "chrome"}}}
+  ],
+  "route": {
+    "rules": [
+      {"action": "sniff"},
+      {"action": "hijack-dns", "protocol": "dns"},
+      {"ip_is_private": true, "outbound": "direct"},
+      {"action": "reject", "protocol": "quic", "method": "drop"},
+      {"action": "reject", "protocol": "udp", "method": "drop"},
+      {"action": "reject", "protocol": "stun", "method": "drop"},
+      {"action": "reject", "rule_set": ["anti-ad"], "method": "drop"},
+      {"action": "route", "network": "icmp", "outbound": "proxy"},
+      {"action": "route", "clash_mode": "Proxy", "outbound": "proxy"},
+      {"action": "route", "clash_mode": "Direct", "outbound": "direct"},
+      {"action": "route", "rule_set": ["geosite-cn"], "outbound": "direct"},
+      {"action": "route", "rule_set": ["geoip-cn"], "outbound": "direct"}
+    ],
+    "rule_set": [
+      {"tag": "anti-ad", "type": "remote", "url": "https://gh-proxy.com/https://raw.githubusercontent.com/privacy-protection-tools/anti-ad.github.io/master/docs/anti-ad-sing-box.srs", "format": "binary", "download_detour": "direct"},
+      {"tag": "geoip-cn", "type": "remote", "url": "https://gh-proxy.com/https://raw.githubusercontent.com/SagerNet/sing-geoip/rule-set/geoip-cn.srs", "format": "binary", "download_detour": "direct"},
+      {"tag": "geosite-cn", "type": "remote", "url": "https://gh-proxy.com/https://raw.githubusercontent.com/SagerNet/sing-geosite/rule-set/geosite-cn.srs", "format": "binary", "download_detour": "direct"}
+    ],
+    "auto_detect_interface": true,
+    "final": "fallback",
+    "default_domain_resolver": {"server": "remote"}
+  },
+  "experimental": {
+    "clash_api": {"external_controller": "127.0.0.1:9090", "external_ui": "ui", "external_ui_download_url": "https://gh-proxy.com/https://github.com/Zephyruso/zashboard/releases/latest/download/dist.zip", "external_ui_download_detour": "direct", "secret": "", "default_mode": "Rule", "access_control_allow_origin": ["*"], "access_control_allow_private_network": false},
+    "cache_file": {"enabled": true, "path": "cache.db", "cache_id": "ID_bsraakmq", "store_fakeip": true, "store_rdrc": true, "rdrc_timeout": "7d"}
+  }
+}
